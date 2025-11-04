@@ -30,10 +30,7 @@ body{
 }
 
 /* Columna izquierda: LCD + info + INDICACIONES */
-.left{
-  display:grid; grid-template-rows: auto auto 1fr;
-  gap:8px;
-}
+.left{ display:grid; grid-template-rows:auto auto 1fr; gap:8px }
 .box{
   background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
   border:1px solid var(--line); border-radius:16px; padding:10px; box-shadow:var(--shadow);
@@ -60,18 +57,10 @@ body{
 .countdown{font-variant-numeric:tabular-nums;font-weight:900;letter-spacing:.3px;font-size:clamp(16px,2.2vw,22px)}
 
 /* Indicaciones (log) */
-.steps{
-  display:flex; flex-direction:column; min-height:0; /* para que el scroll funcione */
-}
+.steps{ display:flex; flex-direction:column; min-height:0 }
 .steps h3{margin:0 0 6px 0; font-size:14px; color:#cbd5e1; font-weight:700}
-#stepsList{
-  flex:1; overflow:auto; padding-right:4px;
-  font-size:14px; line-height:1.25; color:#d7deea;
-}
-#stepsList .item{
-  margin:6px 0; padding:6px 8px; border-radius:10px;
-  background:#0d172a; border:1px solid #1b2740;
-}
+#stepsList{ flex:1; overflow:auto; padding-right:4px; font-size:14px; line-height:1.25; color:#d7deea }
+#stepsList .item{ margin:6px 0; padding:6px 8px; border-radius:10px; background:#0d172a; border:1px solid #1b2740 }
 #stepsList .time{opacity:.7; font-variant-numeric:tabular-nums; margin-right:6px}
 
 /* Columna derecha: Botones */
@@ -82,23 +71,20 @@ body{
   grid-auto-rows:minmax(56px, 1fr);
 }
 
-/* Botones más compactos + label con ajuste */
+/* Botones + label adaptativa */
 .btn{
   -webkit-tap-highlight-color:transparent; user-select:none; cursor:pointer; border:0;
   padding:10px; border-radius:14px; text-align:center;
   color:#0b1020; font-weight:900; letter-spacing:.3px; position:relative; overflow:hidden;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
 }
-.btn .label{
-  font-size:clamp(13px,1.8vw,18px);
-  line-height:1.05; text-wrap:balance; overflow-wrap:anywhere; word-break:break-word;
-}
-.btn.full .label{ font-size:clamp(12px,1.6vw,16px); } /* <- FULLSCREEN siempre entra */
+.btn .label{ font-size:clamp(13px,1.8vw,18px); line-height:1.05; text-wrap:balance; overflow-wrap:anywhere; word-break:break-word }
+.btn.full .label{ font-size:clamp(12px,1.6vw,16px) } /* FULLSCREEN siempre entra */
 .btn .sub{ font-size:11px; opacity:.9; color:#041019 }
 .btn:active{ transform: scale(.985) }
 .btn[disabled]{ filter:saturate(.4) brightness(.86); opacity:.6; box-shadow:none }
 
-/* Estilos de fondo */
+/* Fondos */
 .btn.power   { background: conic-gradient(from 210deg at 30% 0%, #82ffd6 0deg, #3ddcff 120deg, #b694ff 240deg, #82ffd6 360deg); box-shadow: 0 10px 30px rgba(0,245,160,.22) }
 .btn.full    { background: linear-gradient(160deg, #9b5cf6, #22d3ee);   box-shadow: 0 10px 30px rgba(155,92,246,.28) }
 .btn.pads    { background: linear-gradient(160deg, #7af59a, #22d3ee);   box-shadow: 0 10px 30px rgba(34,211,238,.28) }
@@ -107,25 +93,19 @@ body{
 .btn.shock   { background: linear-gradient(160deg, #ffe08a, #ff7b00);   box-shadow: 0 10px 30px rgba(255,180,80,.30) }
 .btn.cpr     { background: linear-gradient(160deg, #7af59a, #22d3ee);   box-shadow: 0 10px 30px rgba(34,211,238,.28) }
 
-/* Overlays */
-.modal{
+/* Overlays (no bloquean cuando están ocultos) */
+.modal, .rotateOverlay{
   position:fixed; inset:0; display:none; place-items:center; z-index:9999;
   background:rgba(5,9,21,.88); color:#fff; text-align:left; padding:18px;
+  pointer-events:none; /* <- no bloquea */
 }
-.modal.show{ display:grid }
+.modal.show, .rotateOverlay.show{ display:grid; pointer-events:auto } /* <- sólo bloquea visible */
+
 .modalCard{ max-width:560px; width:92%; background:#0b1220; border:1px solid var(--line); border-radius:12px; padding:14px }
 .modal h3{ margin:0 0 8px 0; font-size:18px }
 .modal p { margin:6px 0; color:#d1d7e6; font-size:14px }
 .modal .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .modal .btnClose{ background:#172036; color:#e6edf7; padding:10px 12px; border-radius:12px; border:1px solid #22304e }
-
-/* Fallback portrait */
-.rotateOverlay{
-  position:fixed; inset:0; display:none; place-items:center; z-index:9998;
-  background:rgba(5,9,21,.9); color:#fff; text-align:center; padding:24px;
-  font-size:clamp(16px,3vw,20px)
-}
-.rotateOverlay.show{ display:grid }
 
 @media (orientation: portrait){
   .app{ grid-template-columns: 1fr; }
@@ -133,7 +113,9 @@ body{
 </style>
 </head>
 <body>
-<div class="rotateOverlay" id="rotateOverlay">Girá el teléfono a <b>horizontal</b> para usar el simulador.</div>
+<div class="rotateOverlay" id="rotateOverlay">
+  <div>Girá el teléfono a <b>horizontal</b> para usar el simulador.</div>
+</div>
 
 <!-- Modal iPhone instrucciones fullscreen -->
 <div class="modal" id="fsModal">
@@ -211,12 +193,14 @@ body{
   </section>
 </div>
 
-<script>
-/* ===== Utilidades UI ===== */
+<!-- Script con defer para asegurar que el DOM ya esté listo -->
+<script defer>
+/* ========= Helpers básicos ========= */
 const $ = s => document.querySelector(s);
 const nowTime = ()=>{ const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`; };
 function addStep(text){
   const box = document.getElementById('stepsList');
+  if(!box) return;
   const div = document.createElement('div');
   div.className='item';
   div.innerHTML = `<span class="time">${nowTime()}</span> ${text}`;
@@ -224,15 +208,15 @@ function addStep(text){
   box.scrollTop = box.scrollHeight;
 }
 
-/* ===== Refs ===== */
+/* ========= Refs ========= */
 const lcdText = $('#lcdText'), energyEl = $('#energy'), cycleTag = $('#cycleTag');
 const btnPower = $('#btnPower'), btnFull = $('#btnFull'), btnPads = $('#btnPads');
 const btnAnalyze = $('#btnAnalyze'), btnNobody = $('#btnNobody'), btnShock = $('#btnShock'), btnCPR = $('#btnCPR');
 const padsPill = $('#padsPill'), safePill = $('#safePill'), clockEl = $('#clock');
 const fsModal = $('#fsModal'), fsClose = $('#fsClose');
-const rotateOverlay = document.getElementById('rotateOverlay');
+const rotateOverlay = $('#rotateOverlay');
 
-/* ===== Estado ===== */
+/* ========= Estado ========= */
 const State = { OFF:'off', WAIT_PADS:'wait_pads', ANALYZING:'analyzing', CHARGING:'charging', SHOCK_READY:'shock_ready', CPR:'cpr', READY:'ready' };
 let sim = {
   state: State.OFF, cycle: 0, padsOk: false, safe:false,
@@ -240,26 +224,30 @@ let sim = {
   timers: {an:null, ch:null, cpr:null, metro:null, ekg:null},
 };
 
-/* ===== Orientation overlay ===== */
+/* ========= Orientation overlay ========= */
 function checkOrientation(){
-  const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-  rotateOverlay.classList.toggle('show', isPortrait);
+  try{
+    const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+    rotateOverlay && rotateOverlay.classList.toggle('show', isPortrait);
+  }catch(e){}
 }
 checkOrientation();
 window.addEventListener('orientationchange', checkOrientation);
 window.addEventListener('resize', checkOrientation);
 
-/* ===== TTS nativo ===== */
+/* ========= TTS (opcional) ========= */
 function speak(text){
-  if(!('speechSynthesis' in window)) return;
-  const u = new SpeechSynthesisUtterance(text);
-  const vs = speechSynthesis.getVoices();
-  u.voice = vs.find(v=>v.lang?.startsWith('es')) || null;
-  u.lang = u.voice?.lang || 'es-AR'; u.rate = 1; u.pitch = 1;
-  try { speechSynthesis.cancel(); speechSynthesis.speak(u); } catch(e){}
+  try{
+    if(!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    const vs = speechSynthesis.getVoices();
+    u.voice = vs.find(v=>v.lang?.startsWith('es')) || null;
+    u.lang = u.voice?.lang || 'es-AR'; u.rate = 1; u.pitch = 1;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
 }
 
-/* ===== Fullscreen con fallback iPhone ===== */
+/* ========= Fullscreen con fallback iPhone ========= */
 function isIOS(){
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints>1);
 }
@@ -273,16 +261,17 @@ async function goFullscreen(){
       return;
     }
   }catch(e){}
-  if (isIOS()) fsModal.classList.add('show');
+  if (isIOS()) fsModal && fsModal.classList.add('show');
   window.scrollTo(0,1);
 }
-btnFull.addEventListener('click', goFullscreen);
-fsClose.addEventListener('click', ()=> fsModal.classList.remove('show'));
+btnFull && btnFull.addEventListener('click', goFullscreen);
+fsClose && fsClose.addEventListener('click', ()=> fsModal.classList.remove('show'));
 
-/* ===== helpers ===== */
+/* ========= helpers ========= */
 function setState(s){ sim.state=s; }
-function setEnabled(el, on=true){ el.disabled = !on; }
+function setEnabled(el, on=true){ if(el) el.disabled = !on; }
 function updatePills(){
+  if(!padsPill) return;
   padsPill.textContent = `Parches: ${sim.padsOk ? 'OK' : 'Pendiente'}`;
   safePill.textContent = `Seguridad: ${sim.safe ? 'OK' : 'Pendiente'}`;
   cycleTag.textContent = `Ciclo: ${sim.cycle}`;
@@ -290,12 +279,13 @@ function updatePills(){
 }
 function flashLCD(color='#fff59d'){
   const el = document.getElementById('ekg');
+  if(!el) return;
   el.style.filter='drop-shadow(0 0 8px '+color+')';
   setTimeout(()=> el.style.filter='', 260);
 }
 
-/* ===== POWER ===== */
-btnPower.addEventListener('click', ()=>{
+/* ========= POWER ========= */
+btnPower && btnPower.addEventListener('click', ()=>{
   stopAll();
   sim = { ...sim, state:State.WAIT_PADS, cycle:0, padsOk:false, safe:false, firstAnalysis:true, energy:200 };
   lcdText.textContent = 'Presione “PARCHES OK” cuando estén colocados.';
@@ -307,8 +297,8 @@ btnPower.addEventListener('click', ()=>{
   drawIdle();
 });
 
-/* ===== PARCHES OK ===== */
-btnPads.addEventListener('click', ()=>{
+/* ========= PARCHES OK ========= */
+btnPads && btnPads.addEventListener('click', ()=>{
   if(sim.state!==State.WAIT_PADS) return;
   sim.padsOk = true; updatePills();
   lcdText.textContent = 'Parches confirmados. Presione ANALIZAR.';
@@ -317,8 +307,8 @@ btnPads.addEventListener('click', ()=>{
   addStep('Parches OK. Listo para analizar.');
 });
 
-/* ===== ANALIZAR ===== */
-btnAnalyze.addEventListener('click', ()=>{
+/* ========= ANALIZAR ========= */
+btnAnalyze && btnAnalyze.addEventListener('click', ()=>{
   if(sim.state!==State.WAIT_PADS && sim.state!==State.READY) return;
   sim.safe = false; updatePills();
   setState(State.ANALYZING);
@@ -329,8 +319,8 @@ btnAnalyze.addEventListener('click', ()=>{
   drawAnalyzing(false);
 });
 
-/* ===== ¡NADIE TOQUE! ===== */
-btnNobody.addEventListener('click', ()=>{
+/* ========= ¡NADIE TOQUE! ========= */
+btnNobody && btnNobody.addEventListener('click', ()=>{
   if(sim.state!==State.ANALYZING) return;
   sim.safe = true; updatePills();
   setEnabled(btnNobody,false);
@@ -351,7 +341,7 @@ btnNobody.addEventListener('click', ()=>{
         setEnabled(btnShock,true);
         lcdText.innerHTML = 'Manténgase alejado. Presione SHOCK ahora.';
         speak('Manténgase alejado. Presione el botón de descarga ahora.');
-        addStep('Cargado. Indique ¡nadie toque! y aplique SHOCK.');
+        addStep('Cargado. Aplique SHOCK.');
       }, 2500);
     }else{
       setState(State.CPR);
@@ -364,8 +354,8 @@ btnNobody.addEventListener('click', ()=>{
   }, 4000);
 });
 
-/* ===== SHOCK ===== */
-btnShock.addEventListener('click', ()=>{
+/* ========= SHOCK ========= */
+btnShock && btnShock.addEventListener('click', ()=>{
   if(sim.state!==State.SHOCK_READY) return;
   setEnabled(btnShock,false);
   try{ navigator.vibrate && navigator.vibrate([40,40,80]); }catch(e){}
@@ -378,8 +368,8 @@ btnShock.addEventListener('click', ()=>{
   drawPostShock();
 });
 
-/* ===== RCP (2:00) + metrónomo 110/min ===== */
-btnCPR.addEventListener('click', ()=>{
+/* ========= RCP (2:00) + metrónomo ========= */
+btnCPR && btnCPR.addEventListener('click', ()=>{
   if(sim.state!==State.CPR) return;
   setEnabled(btnCPR,false);
   sim.cycle += 1; updatePills();
@@ -411,31 +401,30 @@ function tickClock(sec){
   const s = String(sec%60).padStart(2,'0');
   clockEl.textContent = `${m}:${s}`;
 }
-function stopCPR(){
-  clearInterval(sim.timers.cpr);
-  stopMetronome();
-}
+function stopCPR(){ clearInterval(sim.timers.cpr); stopMetronome(); }
 
-/* ===== Metronomo WebAudio ===== */
+/* ========= Metronomo WebAudio ========= */
 let audioCtx=null, metroInt=null;
 function startMetronome(bpm=110){
   stopMetronome();
   const interval = 60000/bpm;
-  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  metroInt = setInterval(()=>{
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.frequency.value = 900;
-    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime+0.005);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.09);
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime+0.1);
-  }, interval);
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    metroInt = setInterval(()=>{
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = 900;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime+0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.09);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime+0.1);
+    }, interval);
+  }catch(e){}
 }
 function stopMetronome(){ clearInterval(metroInt); }
 
-/* ===== Animación EKG (canvas) ===== */
+/* ========= Animación EKG (canvas) ========= */
 const ekg = document.getElementById('ekg');
 const g = ekg.getContext('2d');
 function resizeEKG(){ ekg.width = ekg.clientWidth * devicePixelRatio; ekg.height= ekg.clientHeight * devicePixelRatio; }
@@ -502,14 +491,13 @@ function drawPostShock(){
 }
 function drawPostAnalyze(){ clearEKG(); drawIdle(); }
 
-/* ===== Timers utils ===== */
+/* ========= Timers utils ========= */
 function stopAll(){
   ['an','ch','cpr'].forEach(k=> (clearInterval(sim.timers[k]), clearTimeout(sim.timers[k])));
   stopMetronome(); clearEKG();
 }
 
 /* Primer tap habilita audio en móviles */
-let audioCtx;
 window.addEventListener('pointerdown', ()=>{ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }, {once:true});
 
 /* Init */
