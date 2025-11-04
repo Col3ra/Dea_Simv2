@@ -19,14 +19,17 @@ body{
               linear-gradient(140deg, #07122a 0%, #050915 60%, #04070e 100%);
 }
 
-/* LAYOUT */
+/* Layout fijo a viewport para que nada “empuje” */
 .app{
-  height:100dvh; padding:clamp(6px,1.2vw,14px);
+  height:100dvh;
+  padding:clamp(6px,1.2vw,14px);
   display:grid; gap:clamp(8px,1.2vw,14px);
   grid-template-columns: 1.05fr 1fr;
   min-height:0;
 }
-.left{ display:grid; grid-template-rows:auto auto 1fr; gap:8px; min-height:0 }
+
+/* Izquierda: header + LCD + info + INDICACIÓN ACTUAL */
+.left{ display:grid; grid-template-rows:auto auto auto 1fr; gap:8px; min-height:0 }
 .box{
   background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
   border:1px solid var(--line); border-radius:16px; padding:10px; box-shadow:var(--shadow);
@@ -35,7 +38,7 @@ body{
 .headerRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .badge{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#0b1220;color:#cbd5e1}
 
-/* LCD */
+/* LCD solamente para animación (texto siempre oculto) */
 .lcd{
   position:relative; overflow:hidden;
   background:linear-gradient(180deg,#0e1a33 0%, #0a1326 60%, #08101d 100%);
@@ -44,27 +47,33 @@ body{
   display:flex; align-items:center; justify-content:center;
 }
 #ekg{ position:absolute; inset:0; width:100%; height:100%; z-index:1; opacity:.95 }
-.lcd .text{ z-index:2; font-weight:800; letter-spacing:.2px; font-size:clamp(16px,2.2vw,22px); padding:0 6px; transition:opacity .2s }
-.lcd .text.hidden{ opacity:0 }
+.lcd .text{ display:none } /* <- ya no mostramos texto encima del LCD */
 
+/* Info pills */
 .infoRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;color:var(--muted)}
 .pill{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:#0b1220;font-size:12px}
 .countdown{font-variant-numeric:tabular-nums;font-weight:900;letter-spacing:.3px;font-size:clamp(16px,2.2vw,22px)}
 
-/* Indicaciones */
-.steps{ display:flex; flex-direction:column; min-height:0 }
-.steps h3{margin:0 0 6px 0; font-size:14px; color:#cbd5e1; font-weight:700}
-#stepsList{ flex:1; overflow:auto; padding-right:4px; font-size:14px; line-height:1.25; color:#d7deea }
-#stepsList .item{ margin:6px 0; padding:6px 8px; border-radius:10px; background:#0d172a; border:1px solid #1b2740 }
-#stepsList .time{opacity:.7; font-variant-numeric:tabular-nums; margin-right:6px}
+/* INDICACIÓN ACTUAL (solo una frase) */
+.indicacion{
+  display:flex; align-items:center; min-height:0;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border:1px solid var(--line); border-radius:16px; padding:12px; box-shadow:var(--shadow);
+}
+#indicacionTxt{
+  font-size:clamp(16px,2.2vw,22px);
+  line-height:1.25;
+  color:#e9effa;
+}
 
-/* Botonera */
-.right{ min-height:0; position:relative; z-index:2 }
+/* Derecha: botonera estable */
+.right{ min-height:0 }
 .right.box{ display:flex; flex-direction:column }
 .gridBtns{
-  display:grid; gap:8px; flex:1;
+  display:grid; gap:8px;
   grid-template-columns: repeat(3, 1fr);
   grid-auto-rows: minmax(60px, 1fr);
+  flex:1;
   pointer-events:auto;
 }
 .btn{
@@ -73,15 +82,15 @@ body{
   color:#0b1020; font-weight:900; letter-spacing:.3px; position:relative; overflow:hidden;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
 }
-.btn .label{ font-size:clamp(13px,1.7vw,18px); line-height:1.05; text-wrap:balance; overflow-wrap:anywhere }
+.btn .label{ font-size:clamp(13px,1.7vw,18px); line-height:1.05; overflow-wrap:anywhere }
 .btn .sub{ font-size:11px; opacity:.9; color:#041019 }
 .btn:active{ transform: scale(.99) }
 .btn[disabled]{ filter:saturate(.4) brightness(.86); opacity:.6; box-shadow:none }
 
-/* orden: FULLSCREEN último */
+/* FULLSCREEN último siempre */
 .btn.full{ order:99 }
 
-/* fondos */
+/* Fondos */
 .btn.power{background:conic-gradient(from 210deg at 30% 0%, #82ffd6 0deg, #3ddcff 120deg, #b694ff 240deg, #82ffd6 360deg); box-shadow:0 10px 30px rgba(0,245,160,.22)}
 .btn.pads{background:linear-gradient(160deg,#7af59a,#22d3ee); box-shadow:0 10px 30px rgba(34,211,238,.28)}
 .btn.analyze{background:linear-gradient(160deg,#3ddcff,#b694ff); box-shadow:0 10px 30px rgba(61,220,255,.26)}
@@ -90,7 +99,7 @@ body{
 .btn.cpr{background:linear-gradient(160deg,#7af59a,#22d3ee); box-shadow:0 10px 30px rgba(34,211,238,.28)}
 .btn.full{background:linear-gradient(160deg,#9b5cf6,#22d3ee); box-shadow:0 10px 30px rgba(155,92,246,.28)}
 
-/* Overlays (no bloquean cuando están ocultos) */
+/* Overlays (no bloquean ocultos) */
 .modal, .rotateOverlay, #flash{
   position:fixed; inset:0; display:none; place-items:center; z-index:9999; pointer-events:none;
 }
@@ -101,10 +110,21 @@ body{
 .modalCard{ max-width:560px; width:92%; background:#0b1220; border:1px solid var(--line); border-radius:12px; padding:14px }
 .modal .btnClose{ background:#172036; color:#e6edf7; padding:10px 12px; border-radius:12px; border:1px solid #22304e }
 
-/* Flash WOW */
-#flash{ background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%); opacity:0 }
-#flash.show{ display:block; animation:flash .45s ease-out }
-@keyframes flash{ 0%{opacity:0} 10%{opacity:1} 100%{opacity:0} }
+/* SHOCK WOW – “edge-in flash”: blanco desde bordes hacia el centro */
+#flash{ pointer-events:none }
+#flash.show::before{
+  content:""; position:fixed; inset:0; background:#ffffff;
+  /* hueco circular central que se cierra (de grande a pequeño) */
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 55%, black 56%);
+          mask: radial-gradient(circle at 50% 50%, transparent 55%, black 56%);
+  animation: edgeIn .5s ease-out forwards;
+}
+@keyframes edgeIn{
+  0%   { opacity:0 }
+  10%  { opacity:1; -webkit-mask-size: 250% 250%; mask-size:250% 250% } /* borde apenas entra */
+  60%  { opacity:1; -webkit-mask-size: 30% 30%;  mask-size:30% 30% }    /* se cierra hacia el centro */
+  100% { opacity:0; -webkit-mask-size: 0% 0%;    mask-size:0% 0% }      /* desaparece */
+}
 
 @media (orientation: portrait){ .app{ grid-template-columns: 1fr; } }
 </style>
@@ -120,7 +140,7 @@ body{
       <li>Compartir → <b>Añadir a pantalla de inicio</b>.</li>
       <li>Abrir desde el Home para <b>full screen</b>.</li>
     </ol>
-    <p><i>Aplicaré pseudo-fullscreen mientras tanto.</i></p>
+    <p><i>Aplico pseudo-fullscreen mientras tanto.</i></p>
     <button class="btn btnClose" id="fsClose"><span class="label">Entendido</span></button>
   </div>
 </div>
@@ -140,7 +160,7 @@ body{
     <div class="box">
       <div class="lcd">
         <canvas id="ekg"></canvas>
-        <div class="text" id="lcdText">Encienda el equipo</div>
+        <div class="text" id="lcdText"> <!-- intencionalmente vacío/oculto --> </div>
       </div>
       <div class="infoRow">
         <div class="pill" id="padsPill">Parches: —</div>
@@ -150,10 +170,8 @@ body{
       </div>
     </div>
 
-    <div class="box steps">
-      <h3>Indicaciones</h3>
-      <div id="stepsList"></div>
-    </div>
+    <!-- INDICACIÓN ACTUAL -->
+    <div class="indicacion"><div id="indicacionTxt">Encienda el equipo.</div></div>
   </section>
 
   <!-- DERECHA -->
@@ -171,12 +189,10 @@ body{
   </section>
 </div>
 
-<!-- JS con defer + DOMContentLoaded -->
 <script defer>
 document.addEventListener('DOMContentLoaded', () => {
   const $ = s => document.querySelector(s);
-  const nowTime = () => { const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`; };
-  const addStep = t => { const b=$('#stepsList'); const d=document.createElement('div'); d.className='item'; d.innerHTML=`<span class="time">${nowTime()}</span> ${t}`; b.appendChild(d); b.scrollTop=b.scrollHeight; };
+  const indic = $('#indicacionTxt');
 
   const lcdText=$('#lcdText'), energyEl=$('#energy'), cycleTag=$('#cycleTag');
   const btnPower=$('#btnPower'), btnFull=$('#btnFull'), btnPads=$('#btnPads'), btnAnalyze=$('#btnAnalyze');
@@ -187,7 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const State={ OFF:'off', WAIT_PADS:'wait_pads', ANALYZING:'analyzing', CHARGING:'charging', SHOCK_READY:'shock_ready', CPR:'cpr', READY:'ready' };
   let sim={ state:State.OFF, cycle:0, padsOk:false, safe:false, firstAnalysis:true, energy:200, timers:{an:null,ch:null,cpr:null,metro:null,ekg:null} };
 
-  function checkOrientation(){ const p=window.matchMedia('(orientation: portrait)').matches; rotateOverlay.classList.toggle('show', p); }
+  function setInstruction(txt){ indic.textContent = txt; }
+  function checkOrientation(){ const p=matchMedia('(orientation: portrait)').matches; rotateOverlay.classList.toggle('show', p); }
   checkOrientation(); addEventListener('orientationchange',checkOrientation); addEventListener('resize',checkOrientation);
 
   function speak(txt){ if(!('speechSynthesis' in window)) return; const u=new SpeechSynthesisUtterance(txt); const vs=speechSynthesis.getVoices(); u.voice=vs.find(v=>v.lang?.startsWith('es'))||null; u.lang=u.voice?.lang||'es-AR'; u.rate=1; u.pitch=1; try{ speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
@@ -210,80 +227,90 @@ document.addEventListener('DOMContentLoaded', () => {
   const en = (el,v=true)=> el.disabled=!v;
   const setState = s => sim.state=s;
   const updatePills = ()=>{ padsPill.textContent=`Parches: ${sim.padsOk?'OK':'Pendiente'}`; safePill.textContent=`Seguridad: ${sim.safe?'OK':'Pendiente'}`; cycleTag.textContent=`Ciclo: ${sim.cycle}`; energyEl.textContent=(sim.state===State.SHOCK_READY||sim.state===State.CHARGING)?`${sim.energy} J`:'—'; };
-  const hideLCDText = h => lcdText.classList.toggle('hidden', h);
 
+  /* ===== POWER ===== */
   btnPower.addEventListener('click', ()=>{
     stopAll();
     sim={ ...sim, state:State.WAIT_PADS, cycle:0, padsOk:false, safe:false, firstAnalysis:true, energy:200 };
-    lcdText.textContent='Presione “PARCHES OK” cuando estén colocados.'; hideLCDText(false);
     en(btnPads,true); en(btnAnalyze,false); en(btnNobody,false); en(btnShock,false); en(btnCPR,false);
-    clockEl.textContent='00:00'; updatePills(); speak('Coloque los parches y confirme.'); addStep('Equipo encendido. Coloque parches y confirme.'); drawIdle();
+    clockEl.textContent='00:00'; updatePills();
+    setInstruction('Coloque los parches como se indica y toque “PARCHES OK”.');
+    speak('Coloque los parches y confirme parches ok.');
+    drawIdle();
   });
 
+  /* ===== PARCHES OK ===== */
   btnPads.addEventListener('click', ()=>{
     if(sim.state!==State.WAIT_PADS) return;
     sim.padsOk=true; updatePills();
-    lcdText.textContent='Parches confirmados. Presione ANALIZAR.'; hideLCDText(false);
-    en(btnAnalyze,true); addStep('Parches OK. Listo para analizar.'); speak('Parches colocados correctamente. Presione analizar.');
+    en(btnAnalyze,true);
+    setInstruction('Listo. Presione “ANALIZAR”.');
+    speak('Parches colocados correctamente. Presione analizar.');
   });
 
+  /* ===== ANALIZAR ===== */
   btnAnalyze.addEventListener('click', ()=>{
     if(sim.state!==State.WAIT_PADS && sim.state!==State.READY) return;
     sim.safe=false; updatePills(); setState(State.ANALYZING);
     en(btnAnalyze,false); en(btnNobody,true); en(btnShock,false); en(btnCPR,false);
-    lcdText.textContent='No toque al paciente. Confirme con ¡NADIE TOQUE!'; hideLCDText(false);
-    addStep('Preparando análisis: confirme seguridad.'); speak('No toque al paciente. Confirme nadie toque para iniciar el análisis.');
+    setInstruction('No toque al paciente. Confirme seguridad con “¡NADIE TOQUE!”.');
+    speak('No toque al paciente. Confirme nadie toque para iniciar el análisis.');
     drawAnalyzing(false);
   });
 
+  /* ===== ¡NADIE TOQUE! ===== */
   btnNobody.addEventListener('click', ()=>{
     if(sim.state!==State.ANALYZING) return;
     sim.safe=true; updatePills(); en(btnNobody,false);
-    lcdText.textContent='Analizando ritmo...'; hideLCDText(true);
-    addStep('Analizando ritmo...'); speak('Analizando ritmo.');
+    setInstruction('Analizando ritmo…'); speak('Analizando ritmo.');
     drawAnalyzing(true);
     clearTimeout(sim.timers.an);
     sim.timers.an=setTimeout(()=>{
       if(sim.firstAnalysis){
         setState(State.CHARGING);
-        lcdText.textContent=`Descarga indicada. Cargando ${sim.energy} J...`; hideLCDText(false);
-        addStep('Ritmo desfibrilable. Cargando energía.'); speak('Descarga indicada. Cargando.');
+        setInstruction(`Ritmo desfibrilable. Cargando ${sim.energy} J…`);
+        speak('Descarga indicada. Cargando.');
         clearTimeout(sim.timers.ch);
         sim.timers.ch=setTimeout(()=>{
           setState(State.SHOCK_READY); en(btnShock,true);
-          lcdText.textContent='Manténgase alejado. Presione SHOCK ahora.'; hideLCDText(false);
-          addStep('Cargado. Aplique SHOCK.'); speak('Manténgase alejado. Presione el botón de descarga ahora.');
+          setInstruction('¡Nadie toque! Presione “SHOCK” ahora.');
+          speak('Manténgase alejado. Presione el botón de descarga ahora.');
         },2500);
       }else{
         setState(State.CPR); en(btnCPR,true);
-        lcdText.textContent='No se recomienda descarga. Inicie RCP 2:00'; hideLCDText(false);
-        addStep('No desfibrilable. Inicie RCP 2 minutos.'); speak('No se recomienda descarga. Inicie R C P durante dos minutos.');
+        setInstruction('No se recomienda descarga. Inicie RCP 2:00 (110/min).');
+        speak('No se recomienda descarga. Inicie R C P durante dos minutos.');
         drawPostAnalyze();
       }
     },4000);
   });
 
+  /* ===== SHOCK ===== */
   btnShock.addEventListener('click', ()=>{
-    if(sim.state!==State.SHock_READY && sim.state!==State.SHOCK_READY){} // guard
     if(sim.state!==State.SHOCK_READY) return;
     en(btnShock,false);
     try{ navigator.vibrate && navigator.vibrate([40,40,80]); }catch(e){}
+    // WOW flash desde bordes hacia el centro
     flashEl.classList.remove('show'); void flashEl.offsetWidth; flashEl.classList.add('show');
-    lcdText.textContent=`Descarga aplicada ${sim.energy} J. Inicie RCP 2:00`; hideLCDText(false);
-    addStep('Descarga aplicada. Comience RCP 2 minutos.'); speak('Descarga aplicada. Inicie R C P durante dos minutos.');
+    setInstruction(`Descarga aplicada ${sim.energy} J. Inicie RCP 2:00.`);
+    speak('Descarga aplicada. Inicie R C P durante dos minutos.');
     setState(State.CPR); en(btnCPR,true); drawPostShock();
   });
 
+  /* ===== RCP ===== */
   btnCPR.addEventListener('click', ()=>{
     if(sim.state!==State.CPR) return;
     en(btnCPR,false); sim.cycle+=1; updatePills();
-    addStep(`RCP ciclo ${sim.cycle} iniciado (110/min, 2:00).`); runCPR(120,110,()=>{
+    runCPR(120,110,()=>{
       sim.firstAnalysis=false; setState(State.READY); en(btnAnalyze,true);
-      lcdText.textContent='Re-análisis disponible. Presione ANALIZAR.'; hideLCDText(false);
-      addStep('Finaliza RCP. Re-analizar ritmo.'); speak('Detenga compresiones. Presione analizar.'); drawIdle();
+      setInstruction('Finaliza RCP. Re-analice el ritmo con “ANALIZAR”.');
+      speak('Detenga compresiones. Presione analizar.');
+      drawIdle();
     });
+    setInstruction('RCP en curso 2:00 (110/min).');
   });
 
+  /* ===== RCP temporizador + metrónomo ===== */
   function runCPR(seconds=120,bpm=110,onEnd=()=>{}){
     stopCPR(); let t=seconds; tickClock(t); startMetronome(bpm);
     sim.timers.cpr=setInterval(()=>{ t--; if(t<0){ stopCPR(); onEnd(); return; } tickClock(t); },1000);
@@ -291,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function tickClock(s){ const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); clockEl.textContent=`${m}:${ss}`; }
   function stopCPR(){ clearInterval(sim.timers.cpr); stopMetronome(); }
 
+  /* ===== Metronomo WebAudio ===== */
   let audioCtx=null, metroInt=null;
   function startMetronome(bpm=110){
     stopMetronome(); const interval=60000/bpm;
@@ -305,10 +333,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function stopMetronome(){ clearInterval(metroInt); }
 
+  /* ===== Canvas EKG ===== */
   const ekg=document.getElementById('ekg'); const g=ekg.getContext('2d');
   function resizeEKG(){ ekg.width=ekg.clientWidth*devicePixelRatio; ekg.height=ekg.clientHeight*devicePixelRatio; }
   addEventListener('resize',resizeEKG); resizeEKG();
   function clearEKG(){ g.clearRect(0,0,ekg.width,ekg.height); cancelAnimationFrame(sim.timers.ekg); }
+
   function drawIdle(){
     clearEKG(); const mid=ekg.height*0.5; g.strokeStyle='rgba(210,220,240,0.85)'; g.lineWidth=2; let t0=performance.now();
     (function loop(t){ g.fillStyle='rgba(8,16,28,0.18)'; g.fillRect(0,0,ekg.width,ekg.height);
@@ -350,7 +380,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function stopAll(){ ['an','ch','cpr'].forEach(k=> (clearInterval(sim.timers[k]), clearTimeout(sim.timers[k]))); stopMetronome(); clearEKG(); }
 
-  lcdText.textContent='Encienda el equipo'; updatePills(); drawIdle(); addStep('Listo. Encienda el equipo.');
+  // Init
+  setInstruction('Encienda el equipo.');
+  updatePills();
+  drawIdle();
 });
 </script>
 </body>
