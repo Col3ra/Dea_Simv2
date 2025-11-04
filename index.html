@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DEA – Prototipo móvil fullscreen</title>
+<meta name="theme-color" content="#050915">
+
+<style>
+:root{
+  --bg:#050915;
+  --panel:#0b1220;
+  --glass:#0d1424cc;
+  --line:#1f2a44;
+  --txt:#e6edf7;
+  --muted:#95a3bd;
+  --good:#22c55e;
+  --warn:#ef4444;
+  --accentA:#9b5cf6;
+  --accentB:#22d3ee;
+  --accentC:#00f5a0;
+  --shadow:0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.02);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+  background: radial-gradient(1200px 800px at 10% -10%, #0b1730 0%, #060b16 50%, var(--bg) 100%),
+              linear-gradient(140deg, #07122a 0%, #050915 60%, #04070e 100%);
+}
+
+/* contenedor */
+.app{
+  min-height:100dvh; padding:clamp(10px,2.5vw,18px);
+  display:grid; gap:clamp(10px,2vw,16px);
+  grid-template-rows:auto 1fr auto;
+}
+
+/* cabecera estado */
+.header{
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border:1px solid var(--line); border-radius:18px; padding:12px;
+  box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.header:before{
+  content:""; position:absolute; inset:-2px; background:
+  radial-gradient(600px 200px at 0% -20%, rgba(123,77,255,.15), transparent 60%),
+  radial-gradient(600px 200px at 100% 0%, rgba(34,211,238,.15), transparent 60%);
+  filter: blur(10px);
+}
+.brand{
+  display:flex; align-items:center; gap:10px; margin-bottom:8px;
+}
+.badge{
+  font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--line);
+  background:#0b1220; color:#cbd5e1;
+}
+.status{
+  display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.lcd{
+  font-variant-numeric:tabular-nums;
+  font-size:clamp(16px,3.6vw,22px); font-weight:800; letter-spacing:.2px;
+  background:linear-gradient(180deg,#0e1a33 0%, #0a1326 60%, #08101d 100%);
+  border:1px solid #1d2840; border-radius:14px; padding:14px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+}
+
+/* tablero botones */
+.controls{
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border:1px solid var(--line); border-radius:18px; padding:12px; box-shadow:var(--shadow);
+}
+.gridBtns{
+  display:grid; gap:12px;
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width:820px){
+  .gridBtns{grid-template-columns: repeat(4, 1fr);}
+}
+
+/* Botón XL con glow */
+.btn{
+  -webkit-tap-highlight-color:transparent;
+  user-select:none; cursor:pointer; border:0;
+  padding:16px 14px; border-radius:16px; text-align:center;
+  color:#0b1020; font-weight:900; font-size:clamp(16px,4vw,20px);
+  letter-spacing:.3px; position:relative; overflow:hidden;
+  transform: translateZ(0);
+}
+.btn .sub{ display:block; font-size:12px; opacity:.9; margin-top:2px; color:#041019 }
+.btn:active{ transform: scale(.98) }
+
+.btn.power{
+  background: conic-gradient(from 210deg at 30% 0%, #82ffd6 0deg, #3ddcff 120deg, #b694ff 240deg, #82ffd6 360deg);
+  box-shadow: 0 12px 40px rgba(0,245,160,.25);
+}
+.btn.analyze{
+  background: linear-gradient(160deg, #3ddcff, #b694ff);
+  box-shadow: 0 12px 40px rgba(61,220,255,.28);
+}
+.btn.nobody{
+  background: linear-gradient(160deg, #ffb4b4, #ff6a6a);
+  box-shadow: 0 12px 40px rgba(255,90,90,.35);
+}
+.btn.shock{
+  background: linear-gradient(160deg, #ffe08a, #ff7b00);
+  box-shadow: 0 12px 40px rgba(255,180,80,.35);
+}
+.btn.cpr{
+  background: linear-gradient(160deg, #7af59a, #22d3ee);
+  box-shadow: 0 12px 40px rgba(34,211,238,.32);
+}
+.btn.full{
+  background: linear-gradient(160deg, #9b5cf6, #22d3ee);
+  box-shadow: 0 12px 40px rgba(155,92,246,.32);
+}
+.btn[disabled]{ filter:saturate(.4) brightness(.8); opacity:.55; box-shadow:none; }
+
+/* panel “torso” minimal touch */
+.torso{
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border:1px solid var(--line); border-radius:18px; padding:12px; box-shadow:var(--shadow);
+}
+.torsoCanvas{
+  width:100%; aspect-ratio: 10 / 7; border-radius:12px;
+  background:
+    radial-gradient(60% 50% at 50% 20%, #101a2e 0%, #0c1426 60%, #0a1221 100%);
+  border:1px solid #1b2740; position:relative; overflow:hidden;
+}
+.zone{
+  position:absolute; width:34vw; max-width:220px; aspect-ratio:1/1; border-radius:50%;
+  border:2px dashed #38507a; background:rgba(43,63,96,.18);
+  display:grid; place-items:center; color:var(--muted); font-weight:700; letter-spacing:.4px;
+}
+.zone.good{ border-color: var(--good); background:rgba(34,197,94,.12); color:#d1fae5 }
+.zone.S{ left:8%; top:10% }
+.zone.A{ right:6%; bottom:8% }
+
+.footer{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; color:var(--muted);
+}
+.pill{ padding:6px 10px; border:1px solid var(--line); border-radius:999px; background:#0b1220; font-size:12px }
+
+.countdown{
+  font-variant-numeric:tabular-nums; font-weight:900; letter-spacing:.3px;
+  font-size:clamp(18px,6vw,26px);
+}
+
+/* safe-area on iOS notch */
+.safe{ padding-bottom: env(safe-area-inset-bottom) }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER: estado -->
+  <section class="header">
+    <div class="brand">
+      <span class="badge">DEA</span>
+      <span class="badge" id="modeTag">Prototipo móvil</span>
+      <span class="badge" id="cycleTag">Ciclo: 0</span>
+    </div>
+    <div class="status">
+      <div class="lcd" id="lcd">Encienda el equipo</div>
+      <div class="pill">Energía: <b id="energy">—</b></div>
+    </div>
+  </section>
+
+  <!-- CONTROLES XL -->
+  <section class="controls">
+    <div class="gridBtns">
+      <button class="btn power"   id="btnPower">POWER<span class="sub">Encender / Reiniciar</span></button>
+      <button class="btn full"    id="btnFull">FULLSCREEN<span class="sub">Sin barras ni gestos</span></button>
+      <button class="btn analyze" id="btnAnalyze" disabled>ANALIZAR<span class="sub">Requiere parches OK</span></button>
+      <button class="btn nobody"  id="btnNobody" disabled>¡NADIE TOQUE!<span class="sub">Confirmar seguridad</span></button>
+      <button class="btn shock"   id="btnShock" disabled>SHOCK<span class="sub">Descarga</span></button>
+      <button class="btn cpr"     id="btnCPR" disabled>RCP 2:00<span class="sub">Metrónomo 110/min</span></button>
+    </div>
+  </section>
+
+  <!-- TORSO táctil para “parches OK” (toques grandes, sin drag) -->
+  <section class="torso safe">
+    <div class="torsoCanvas" id="torso">
+      <div class="zone S" id="zoneS">S</div>
+      <div class="zone A" id="zoneA">A</div>
+      <!-- Silueta simple -->
+      <svg viewBox="0 0 800 560" style="position:absolute;inset:0;width:100%;height:100%;opacity:.9" aria-hidden="true">
+        <path d="M140,90 C220,20 580,20 660,90 C740,150 760,300 730,460 C680,520 120,520 70,460 C40,300 60,150 140,90 Z"
+              fill="#0f1830" stroke="#1f2a44" stroke-width="3"/>
+        <rect x="380" y="170" width="40" height="180" rx="20" fill="#0b1220" stroke="#26324a"/>
+      </svg>
+    </div>
+    <div class="footer">
+      <div class="pill" id="padsPill">Parches: —</div>
+      <div class="pill" id="safePill">Seguridad: —</div>
+      <div class="pill countdown" id="clock">00:00</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =====================================================
+   DEA – Prototipo móvil: flujo simple, botones XL, fullscreen
+   - Primer análisis: SIEMPRE desfibrilable (shock indicado)
+   - Luego: RCP 2:00 → re-análisis (no desfibrilable → RCP)
+   - Sin escenarios; protocolo guiado
+===================================================== */
+
+const $ = sel => document.querySelector(sel);
+
+// UI refs
+const lcd = $('#lcd'), energyEl = $('#energy'), cycleTag = $('#cycleTag');
+const btnPower = $('#btnPower'), btnFull = $('#btnFull'), btnAnalyze = $('#btnAnalyze');
+const btnNobody = $('#btnNobody'), btnShock = $('#btnShock'), btnCPR = $('#btnCPR');
+const zoneS = $('#zoneS'), zoneA = $('#zoneA');
+const padsPill = $('#padsPill'), safePill = $('#safePill'), clockEl = $('#clock');
+
+// Estado
+const State = { OFF:'off', PADS:'pads', ANALYZING:'analyzing', CHARGING:'charging', SHOCK_READY:'shock_ready', CPR:'cpr', READY:'ready' };
+let sim = {
+  state: State.OFF,
+  cycle: 0,
+  pads: {S:false, A:false},
+  safe:false,
+  firstAnalysis:true, // la primera vez -> desfibrilable
+  energy: 200,
+  timers: {an:null, ch:null, cpr:null, metro:null},
+};
+
+// ====== TTS nativo (simple y robusto) ======
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  const vs = speechSynthesis.getVoices();
+  u.voice = vs.find(v=>v.lang?.startsWith('es')) || null;
+  u.lang = u.voice?.lang || 'es-AR';
+  u.rate = 1; u.pitch = 1;
+  try { speechSynthesis.cancel(); speechSynthesis.speak(u); } catch(e){}
+}
+
+// ====== Fullscreen ======
+async function toggleFull(){
+  try{
+    if (!document.fullscreenElement){
+      await document.documentElement.requestFullscreen({navigationUI:"hide"});
+      btnFull.querySelector('.sub').textContent = 'Salir de pantalla completa';
+    }else{
+      await document.exitFullscreen();
+      btnFull.querySelector('.sub').textContent = 'Sin barras ni gestos';
+    }
+  }catch(e){}
+}
+btnFull.addEventListener('click', toggleFull);
+
+// ====== Helpers UI ======
+function setState(s){ sim.state=s; }
+function updatePills(){
+  padsPill.textContent = `Parches: ${sim.pads.S && sim.pads.A ? 'OK' : 'Incompletos'}`;
+  safePill.textContent = `Seguridad: ${sim.safe ? 'OK' : 'Pendiente'}`;
+  cycleTag.textContent = `Ciclo: ${sim.cycle}`;
+  energyEl.textContent = sim.state===State.SHOCK_READY || sim.state===State.CHARGING ? `${sim.energy} J` : '—';
+}
+function enable(el, on=true){ el.disabled = !on; }
+
+// ====== Paso 1: POWER ======
+btnPower.addEventListener('click', ()=>{
+  stopAll();
+  sim = { ...sim, state:State.PADS, cycle:0, pads:{S:false,A:false}, safe:false, firstAnalysis:true, energy:200 };
+  lcd.textContent = 'Coloque los parches en S y A (toque cada zona)';
+  updatePills();
+  enable(btnAnalyze,false); enable(btnNobody,false); enable(btnShock,false); enable(btnCPR,false);
+  zoneS.classList.remove('good'); zoneA.classList.remove('good');
+  clockEl.textContent = '00:00';
+  speak('Coloque los parches como se indica.');
+});
+
+// Zonas táctiles grandes: toque = “colocado”
+zoneS.addEventListener('click', ()=>{
+  if(sim.state!==State.PADS) return;
+  sim.pads.S = true; zoneS.classList.add('good'); updatePills(); tryEnableAnalyze();
+});
+zoneA.addEventListener('click', ()=>{
+  if(sim.state!==State.PADS) return;
+  sim.pads.A = true; zoneA.classList.add('good'); updatePills(); tryEnableAnalyze();
+});
+function tryEnableAnalyze(){
+  if(sim.pads.S && sim.pads.A){
+    enable(btnAnalyze,true);
+    lcd.textContent = 'Parches OK. Presione ANALIZAR.';
+    speak('Parches colocados correctamente. Presione analizar.');
+  }
+}
+
+// ====== Paso 2: ANALIZAR ======
+btnAnalyze.addEventListener('click', ()=>{
+  if(sim.state!==State.PADS && sim.state!==State.READY) return;
+  sim.safe = false; updatePills();
+  setState(State.ANALYZING);
+  enable(btnAnalyze,false); enable(btnNobody,true); enable(btnShock,false); enable(btnCPR,false);
+  lcd.innerHTML = 'No toque al paciente. <br> Confirme con ¡NADIE TOQUE!';
+  speak('No toque al paciente. Confirme nadie toque para iniciar el análisis.');
+});
+
+btnNobody.addEventListener('click', ()=>{
+  if(sim.state!==State.ANALYZING) return;
+  sim.safe = true; updatePills();
+  enable(btnNobody,false);
+  lcd.textContent = 'Analizando ritmo...';
+  speak('Analizando ritmo.');
+  clearTimeout(sim.timers.an);
+  sim.timers.an = setTimeout(()=>{
+    if(sim.firstAnalysis){
+      // Primer análisis: desfibrilable
+      setState(State.CHARGING);
+      lcd.innerHTML = `Descarga indicada. <br> Cargando ${sim.energy} J...`;
+      speak('Descarga indicada. Cargando.');
+      clearTimeout(sim.timers.ch);
+      sim.timers.ch = setTimeout(()=>{
+        setState(State.SHOCK_READY);
+        enable(btnShock,true);
+        lcd.innerHTML = 'Manténgase alejado. <br> Presione SHOCK ahora.';
+        speak('Manténgase alejado. Presione el botón de descarga ahora.');
+      }, 2500);
+    }else{
+      // Reanálisis: no desfibrilable → RCP
+      setState(State.CPR);
+      enable(btnCPR,true);
+      lcd.innerHTML = 'No se recomienda descarga. <br> Inicie RCP 2:00';
+      speak('No se recomienda descarga. Inicie R C P durante dos minutos.');
+    }
+  }, 4000);
+});
+
+// ====== Paso 3: SHOCK ======
+btnShock.addEventListener('click', async ()=>{
+  if(sim.state!==State.SHOCK_READY) return;
+  enable(btnShock,false);
+  // vibración si existe (feedback háptico)
+  try{ navigator.vibrate && navigator.vibrate([40,40,80]); }catch(e){}
+  flashLCD('#ffd27a');
+  lcd.innerHTML = `Descarga aplicada ${sim.energy} J. <br> Inicie RCP 2:00`;
+  speak('Descarga aplicada. Inicie R C P durante dos minutos.');
+  setState(State.CPR);
+  enable(btnCPR,true);
+});
+
+// ====== Paso 4: RCP (2:00) + metrónomo 110/min ======
+btnCPR.addEventListener('click', ()=>{
+  if(sim.state!==State.CPR) return;
+  enable(btnCPR,false);
+  sim.cycle += 1; updatePills();
+  runCPR(120, 110, ()=>{
+    // fin de RCP → Reanálisis
+    sim.firstAnalysis = false; // a partir de ahora, no desfibrilable
+    setState(State.READY);
+    enable(btnAnalyze,true);
+    lcd.innerHTML = 'Re-análisis disponible. <br> Presione ANALIZAR.';
+    speak('Detenga compresiones. Presione analizar.');
+  });
+});
+
+function runCPR(seconds=120, bpm=110, onEnd=()=>{}){
+  stopCPR();
+  let t = seconds;
+  tickClock(t);
+  startMetronome(bpm);
+  sim.timers.cpr = setInterval(()=>{
+    t--;
+    if(t<0){
+      stopCPR(); onEnd(); return;
+    }
+    tickClock(t);
+  }, 1000);
+}
+function tickClock(sec){
+  const m = String(Math.floor(sec/60)).padStart(2,'0');
+  const s = String(sec%60).padStart(2,'0');
+  clockEl.textContent = `${m}:${s}`;
+}
+function stopCPR(){
+  clearInterval(sim.timers.cpr);
+  stopMetronome();
+}
+
+// ====== Metronomo WebAudio ======
+let audioCtx=null, metroInt=null;
+function startMetronome(bpm=110){
+  stopMetronome();
+  const interval = 60000/bpm;
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  metroInt = setInterval(()=>{
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = 900;
+    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime+0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.09);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime+0.1);
+  }, interval);
+}
+function stopMetronome(){ clearInterval(metroInt); }
+
+// ====== Utils ======
+function stopAll(){
+  ['an','ch','cpr'].forEach(k=> clearInterval(sim.timers[k]) || clearTimeout(sim.timers[k]));
+  stopMetronome();
+}
+function flashLCD(color='#fff59d'){
+  const el = lcd;
+  const prev = el.style.boxShadow;
+  el.style.boxShadow = `0 0 0 9999px ${color}20 inset, 0 0 30px ${color}`;
+  setTimeout(()=> el.style.boxShadow = prev, 280);
+}
+
+// evitar bloqueo por políticas de audio móvil: primer tap activa audioCtx
+window.addEventListener('pointerdown', ()=>{ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }, {once:true});
+
+// Mensaje inicial
+lcd.textContent = 'Encienda el equipo';
+updatePills();
+</script>
+</body>
+</html>
