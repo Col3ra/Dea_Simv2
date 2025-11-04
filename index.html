@@ -109,23 +109,29 @@ body{
 .modal.show{ display:grid; pointer-events:auto }
 .modalCard{ max-width:560px; width:92%; background:#0b1220; border:1px solid var(--line); border-radius:12px; padding:14px }
 .modal .btnClose{ background:#172036; color:#e6edf7; padding:10px 12px; border-radius:12px; border:1px solid #22304e }
-
-/* SHOCK WOW – “edge-in flash”: blanco desde bordes hacia el centro */
-#flash{ pointer-events:none }
-#flash.show::before{
-  content:""; position:fixed; inset:0; background:#ffffff;
-  /* hueco circular central que se cierra (de grande a pequeño) */
-  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 55%, black 56%);
-          mask: radial-gradient(circle at 50% 50%, transparent 55%, black 56%);
-  animation: edgeIn .5s ease-out forwards;
-}
-@keyframes edgeIn{
-  0%   { opacity:0 }
-  10%  { opacity:1; -webkit-mask-size: 250% 250%; mask-size:250% 250% } /* borde apenas entra */
-  60%  { opacity:1; -webkit-mask-size: 30% 30%;  mask-size:30% 30% }    /* se cierra hacia el centro */
-  100% { opacity:0; -webkit-mask-size: 0% 0%;    mask-size:0% 0% }      /* desaparece */
+  
+/* === FLASH WOW CROSS-BROWSER === */
+#flash {
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 40%, rgba(255,255,255,1) 100%);
+  opacity:0;
+  pointer-events:none;
+  z-index:9999;
+  transform:scale(1.5);
 }
 
+#flash.show {
+  animation: flashEdgeIn 0.6s ease-out forwards;
+}
+
+@keyframes flashEdgeIn {
+  0%   { opacity:0; transform:scale(1.5); filter:blur(0px); }
+  10%  { opacity:1; transform:scale(1.5); filter:blur(20px); }
+  40%  { opacity:1; transform:scale(0.2); filter:blur(10px); }
+  100% { opacity:0; transform:scale(0);   filter:blur(0px); }
+}
+  
 @media (orientation: portrait){ .app{ grid-template-columns: 1fr; } }
 </style>
 </head>
